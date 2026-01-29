@@ -1,10 +1,21 @@
 import models.*;
 import models.Enum.*;
+import config.DBConnection;
+import java.sql.Connection;
+import java.sql.Statement;
 import java.time.Instant;
 
 public class Main {
     public static void main(String[] args) {
         DataRetriever dataRetriever = new DataRetriever();
+        try (Connection conn = new DBConnection().getConnection();
+             Statement stmt = conn.createStatement()) {
+            stmt.executeUpdate("DELETE FROM dish_order WHERE id_order = 100");
+            stmt.executeUpdate("DELETE FROM \"order\" WHERE id = 100");
+            System.out.println(">>> [INFO] Base de données nettoyée. Prêt pour la démo.\n");
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
 
         System.out.println("========== TEST 1 : GESTION DES INGRÉDIENTS ==========");
         Ingredient tomate = new Ingredient();
