@@ -36,7 +36,7 @@ public class Main {
 		dataRetriever.saveDish(dish);
 		System.out.println("Prix mis à jour pour " + dish.getName());
 
-		System.out.println("\n========== TEST 3 : GESTION DES COMMANDES (K3) ==========");
+		System.out.println("\n========== TEST 3 : GESTION DES COMMANDES ==========");
 		Order myOrder = new Order();
 		myOrder.setId(100);
 		myOrder.setReference("REF-2026-001");
