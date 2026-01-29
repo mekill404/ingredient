@@ -1,42 +1,50 @@
 # 🍽️ Mini Dish - Système de Gestion de Restaurant
 
 [![Database](https://img.shields.io/badge/Database-PostgreSQL-336791?style=for-the-badge&logo=postgresql)](https://www.postgresql.org/)
-[![Status](https://img.shields.io/badge/Status-Database_Ready-green?style=for-the-badge)](https://github.com/)
+[![Java](https://img.shields.io/badge/Java-21-orange?style=for-the-badge&logo=openjdk)](https://openjdk.org/)
 
 ## 📝 Présentation du Projet
-Mini Dish est une application conçue pour optimiser la gestion d'un restaurant. Ce projet couvre l'intégralité de la chaîne de valeur : de la gestion du catalogue des plats à la traçabilité précise des stocks d'ingrédients.
+Mini Dish est une application de gestion de restaurant couvrant le catalogue des plats, la traçabilité des stocks et le cycle de vie des commandes.
 
 ---
 
-## 🏗️ Architecture de la Base de Données
+## 🛠️ Implémentation JDBC (Java Database Connectivity)
 
-L'étape actuelle se concentre sur la fondation du projet : une structure SQL robuste et normalisée.
+La couche d'accès aux données (DAO) repose sur une architecture JDBC pure pour garantir performance et contrôle.
 
-### Points Forts de la Modélisation :
-- **Types Énumérés (ENUMs) :** Sécurisation des données via des listes de choix strictes (`starter`, `main`, `dessert`, etc.).
-- **Gestion de Stock Avancée :** Utilisation d'une table de mouvements (`stock_movement`) permettant une traçabilité `IN/OUT` en temps réel.
-- **Normalisation Many-to-Many :** La table `dish_ingredient` permet de dissocier les recettes des ingrédients, offrant une flexibilité maximale.
+### 🔑 Points Clés du `DataRetriever` :
+- **Gestion des Connexions :** Utilisation du **Try-with-resources** pour garantir la fermeture automatique des `Connection`, `Statement` et `ResultSet`, évitant ainsi les fuites de ressources.
+- **Sécurité :** Utilisation systématique de **PreparedStatement** pour prévenir les injections SQL et optimiser les performances via le pré-parsing des requêtes.
+- **Mise à jour Atomique (UPSERT) :** Implémentation de la clause `ON CONFLICT` de PostgreSQL dans les méthodes `save` pour gérer l'insertion et la mise à jour en une seule transaction.
+- **Mapping Objet-Relationnel Manuel :** - Conversion des types `Timestamp` SQL vers `Instant` Java.
+    - Mapping des chaînes de caractères vers les types `Enum` Java (`valueOf()`).
+    - Cast explicite des types énumérés SQL (ex: `?::order_status`).
 
-### Schéma de l'entité-relation (ERD) :
-> *Note : Imaginez ici une relation fluide entre Plats, Ingrédients et Commandes.*
+
+
+---
+
+## 🏗️ Architecture & Modélisation (K3)
+
+### 🛡️ Gestion des Commandes
+L'application gère désormais le cycle de vie complet d'une commande :
+- **Types :** `EAT_IN` (Sur place) ou `TAKE_AWAY` (À emporter).
+- **Statuts :** `CREATED` ➔ `READY` ➔ `DELIVERED`.
+- **Règle d'Immuabilité :** Une exception `RuntimeException` est levée dans `saveOrder` si une modification est tentée sur une commande déjà livrée.
 
 ---
 
 ## 🚀 Installation & Configuration
 
-### 1. Prérequis
-- PostgreSQL (v15+)
-- Terminal Ubuntu / Linux
+### 1. Configuration de l'environnement
+L'application utilise un fichier `.env` (ou les variables d'environnement système) pour les identifiants de connexion :
+- `DB_URL`: `jdbc:postgresql://localhost:5432/mini_dish_db`
+- `DB_USER`: `mini_dish_db_manager`
+- `DB_PASSWORD`: `votre_mot_de_passe`
 
-### 2. Initialisation de la Base de Données
-Exécutez les scripts dans l'ordre suivant :
-
+### 2. Initialisation SQL
 ```bash
-# Création de l'utilisateur et de la base (en tant que super-admin)
+# 1. Création de la DB
 sudo -u postgres psql -f src/main/resources/sql/db.sql
-
-# Déploiement du schéma (en tant que manager)
+# 2. Schéma et Types ENUM
 psql -h localhost -U mini_dish_db_manager -d mini_dish_db -f src/main/resources/sql/schema.sql
-
-# Insertion des données de test
-psql -h localhost -U mini_dish_db_manager -d mini_dish_db -f src/main/resources/sql/data.sql
