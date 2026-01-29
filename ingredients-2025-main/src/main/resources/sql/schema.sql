@@ -1,10 +1,8 @@
--- 1. Les Énumérations (Types personnalisés)
 CREATE TYPE dish_type AS ENUM ('STARTER', 'MAIN', 'DESSERT');
 CREATE TYPE ingredient_category AS ENUM ('VEGETABLE', 'ANIMAL', 'MARINE', 'DAIRY', 'OTHER');
 CREATE TYPE unit AS ENUM ('PCS', 'KG', 'L');
 CREATE TYPE movement_type AS ENUM ('IN', 'OUT');
 
--- 2. Les Tables de base
 CREATE TABLE dish (
     id            SERIAL PRIMARY KEY,
     name          VARCHAR(255) NOT NULL,
@@ -20,7 +18,6 @@ CREATE TABLE ingredient (
     initial_stock NUMERIC(10, 2) DEFAULT 0
 );
 
--- 3. Les Tables de liaison (La Recette)
 CREATE TABLE dish_ingredient (
     id                SERIAL PRIMARY KEY,
     id_dish           INT REFERENCES dish(id),
@@ -29,7 +26,6 @@ CREATE TABLE dish_ingredient (
     unit              unit
 );
 
--- 4. La Gestion des Commandes
 CREATE TABLE "order" (
     id                SERIAL PRIMARY KEY,
     reference         VARCHAR(255) UNIQUE,
@@ -43,7 +39,6 @@ CREATE TABLE dish_order (
     quantity INT NOT NULL
 );
 
--- 5. Le Suivi des Stocks
 CREATE TABLE stock_movement (
     id                SERIAL PRIMARY KEY,
     id_ingredient     INT REFERENCES ingredient(id),
@@ -52,3 +47,9 @@ CREATE TABLE stock_movement (
     type              movement_type,
     creation_datetime TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE TYPE order_type AS ENUM ('EAT_IN', 'TAKE_AWAY');
+CREATE TYPE order_status AS ENUM ('CREATED', 'READY', 'DELIVERED');
+
+ALTER TABLE "order" ADD COLUMN type order_type DEFAULT 'EAT_IN';
+ALTER TABLE "order" ADD COLUMN status order_status DEFAULT 'CREATED';
